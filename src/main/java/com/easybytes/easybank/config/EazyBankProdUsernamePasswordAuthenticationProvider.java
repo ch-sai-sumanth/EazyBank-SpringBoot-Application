@@ -4,6 +4,7 @@ package com.easybytes.easybank.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -13,9 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("!prod")
+@Profile("prod")
 @RequiredArgsConstructor
-public class EazyBankUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
+public class EazyBankProdUsernamePasswordAuthenticationProvider implements AuthenticationProvider {
 
 
     private final UserDetailsService userDetailsService;
@@ -28,9 +29,12 @@ public class EazyBankUsernamePasswordAuthenticationProvider implements Authentic
 
         UserDetails userDetails=userDetailsService.loadUserByUsername(username);
 
-        //Intentionally removing the password check for lower profiles (Dev,Test,etc,.)
+      if(passwordEncoder.matches(password,userDetails.getPassword())){
         return new UsernamePasswordAuthenticationToken(username, password,userDetails.getAuthorities());
-
+      }
+      else{
+          throw new BadCredentialsException("Bad credentials");
+      }
     }
 
     @Override
