@@ -20,11 +20,12 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http    .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
+        http    .sessionManagement(smc->smc.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true))
+                .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .csrf(csrfConfig->csrfConfig.disable())
                 .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myBalance","/myAccount","/myCards","/myLoans").authenticated()
-                .requestMatchers("/notices","/contact","/register").permitAll());
+                .requestMatchers("/notices","/contact","/register","/invalidSession").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
