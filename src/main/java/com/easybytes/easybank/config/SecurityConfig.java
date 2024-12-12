@@ -1,5 +1,7 @@
 package com.easybytes.easybank.config;
 
+import com.easybytes.easybank.ExceptionHandling.CustomAccessDeniedHandler;
+import com.easybytes.easybank.ExceptionHandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +26,8 @@ public class SecurityConfig {
                 .requestMatchers("/myBalance","/myAccount","/myCards","/myLoans").authenticated()
                 .requestMatchers("/notices","/contact","/register").permitAll());
         http.formLogin(withDefaults());
-        http.httpBasic(withDefaults());
+        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 
