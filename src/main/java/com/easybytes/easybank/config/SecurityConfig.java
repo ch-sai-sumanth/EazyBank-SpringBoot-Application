@@ -2,7 +2,9 @@ package com.easybytes.easybank.config;
 
 import com.easybytes.easybank.ExceptionHandling.CustomAccessDeniedHandler;
 import com.easybytes.easybank.ExceptionHandling.CustomBasicAuthenticationEntryPoint;
+import com.easybytes.easybank.filter.AuthoritiesLoggingAfterFilter;
 import com.easybytes.easybank.filter.CsrfCookieFilter;
+import com.easybytes.easybank.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,6 +55,8 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/contact","/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
