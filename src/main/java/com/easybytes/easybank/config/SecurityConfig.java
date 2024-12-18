@@ -55,7 +55,12 @@ public class SecurityConfig {
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/myBalance","/myAccount","/myCards","/myLoans","/user").authenticated()
+//                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
+                        .requestMatchers("/myBalance").hasRole("USER")
+                        .requestMatchers("/myAccount").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/myCards").hasRole("USER")
+                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices","/contact","/register","/invalidSession").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
