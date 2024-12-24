@@ -2,9 +2,7 @@ package com.easybytes.easybank.config;
 
 import com.easybytes.easybank.ExceptionHandling.CustomAccessDeniedHandler;
 import com.easybytes.easybank.ExceptionHandling.CustomBasicAuthenticationEntryPoint;
-import com.easybytes.easybank.filter.AuthoritiesLoggingAfterFilter;
-import com.easybytes.easybank.filter.CsrfCookieFilter;
-import com.easybytes.easybank.filter.RequestValidationBeforeFilter;
+import com.easybytes.easybank.filter.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +20,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -35,8 +34,7 @@ public class SecurityConfig {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 
         http
-                .securityContext(securityConfig->securityConfig.requireExplicitSave(false))
-                .sessionManagement(sessionConfig->sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                .sessionManagement(sessionConfig->sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(corsConfig-> corsConfig.configurationSource(new CorsConfigurationSource(){
 
                     @Override
@@ -46,6 +44,7 @@ public class SecurityConfig {
                         config.setAllowCredentials(true);
                         config.addAllowedHeader("*");
                         config.addAllowedMethod("*");
+                        config.setExposedHeaders(Arrays.asList("Authorization"));
                         config.setMaxAge(3600L);
                         return config;
                     }
@@ -57,6 +56,8 @@ public class SecurityConfig {
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
