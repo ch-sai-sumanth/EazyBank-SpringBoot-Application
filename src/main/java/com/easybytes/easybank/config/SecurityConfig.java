@@ -67,7 +67,7 @@ public class SecurityConfig {
                         .requestMatchers("/myBalance").hasRole("USER")
                         .requestMatchers("/myAccount").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/myCards").hasRole("USER")
-                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/myLoans").authenticated()
                         .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices","/contact","/register","/invalidSession","/apiLogin").permitAll());
         http.formLogin(withDefaults());
