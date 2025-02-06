@@ -64,10 +64,10 @@ public class SecurityConfig {
                 .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .authorizeHttpRequests((requests) -> requests
 //                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
-                        .requestMatchers("/myBalance").hasRole("USER")
+                        .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/myAccount").hasAnyRole("USER","ADMIN")
-                        .requestMatchers("/myCards").hasRole("USER")
-                        .requestMatchers("/myLoans").authenticated()
+                        .requestMatchers("/myCards").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/myLoans").hasRole("ADMIN")
                         .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices","/contact","/register","/invalidSession","/apiLogin").permitAll());
         http.formLogin(withDefaults());

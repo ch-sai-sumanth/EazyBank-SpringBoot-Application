@@ -1,7 +1,9 @@
 package com.easybytes.easybank.controller;
 
 import com.easybytes.easybank.Constants.ApplicationConstants;
+import com.easybytes.easybank.Repository.AuthoritiesRepository;
 import com.easybytes.easybank.Repository.CustomerRepository;
+import com.easybytes.easybank.model.Authority;
 import com.easybytes.easybank.model.Customer;
 import com.easybytes.easybank.model.LoginRequestDTO;
 import com.easybytes.easybank.model.LoginResponseDTO;
@@ -36,6 +38,7 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
     private final Environment env;
     private final AuthenticationManager authenticationManager;
+    private final AuthoritiesRepository authoritiesRepository;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
@@ -46,6 +49,14 @@ public class UserController {
             Customer savedCustomer = customerRepository.save(customer);
 
             if (savedCustomer.getId() > 0) {
+                String roleName = customer.getRole().equalsIgnoreCase("admin") ? "ROLE_ADMIN" : "ROLE_USER";
+
+                Authority authority = new Authority();
+                authority.setName(roleName);
+                authority.setCustomer(savedCustomer);
+
+                authoritiesRepository.save(authority);
+
                 return ResponseEntity.status(HttpStatus.CREATED).
                         body("Given user details are successfully registered");
             } else {
@@ -90,7 +101,8 @@ public class UserController {
 
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(new LoginResponseDTO(HttpStatus.OK.getReasonPhrase(),jwt));
-    }
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(ApplicationConstants.JWT_HEADER, jwt)
+                .body(new LoginResponseDTO(HttpStatus.OK.getReasonPhrase(), jwt));    }
 
 }
