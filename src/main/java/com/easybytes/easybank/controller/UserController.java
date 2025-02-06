@@ -1,6 +1,6 @@
 package com.easybytes.easybank.controller;
 
-import com.easybytes.easybank.Constants.ApplicationConstants;
+import com.easybytes.easybank.constants.ApplicationConstants;
 import com.easybytes.easybank.Repository.AuthoritiesRepository;
 import com.easybytes.easybank.Repository.CustomerRepository;
 import com.easybytes.easybank.model.Authority;

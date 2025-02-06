@@ -1,4 +1,4 @@
-package com.easybytes.easybank.Constants;
+package com.easybytes.easybank.constants;
 
 public final class ApplicationConstants {
 

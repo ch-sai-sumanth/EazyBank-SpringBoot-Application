@@ -1,6 +1,6 @@
 package com.easybytes.easybank.filter;
 
-import com.easybytes.easybank.Constants.ApplicationConstants;
+import com.easybytes.easybank.constants.ApplicationConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

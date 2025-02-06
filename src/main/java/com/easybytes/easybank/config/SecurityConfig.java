@@ -54,7 +54,7 @@ public class SecurityConfig {
                 }))
                 .csrf(csrfConfig->csrfConfig
                         .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers("/contact","/register","/apiLogin")
+                        .ignoringRequestMatchers("/contact","/register","/apiLogin","/load")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
@@ -69,7 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/myCards").hasAnyRole("USER","ADMIN")
                         .requestMatchers("/myLoans").hasRole("ADMIN")
                         .requestMatchers("/user").authenticated()
-                .requestMatchers("/notices","/contact","/register","/invalidSession","/apiLogin").permitAll());
+                .requestMatchers("/notices","/contact","/register","/invalidSession","/apiLogin","/load").permitAll());
         http.formLogin(withDefaults());
         http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
         http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
