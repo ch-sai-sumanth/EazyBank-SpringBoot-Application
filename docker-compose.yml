@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: easybank-db
+    restart: always
+    environment:
+      POSTGRES_DB: eazybank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - easybank-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  easybank-app:
+    build: .
+    container_name: easybank-app
+    depends_on:
+      - postgres
+    environment:
+      SPRING_APP_NAME: "easybank"
+      DATABASE_HOST: "easybank-db"
+      DATABASE_PORT: "5432"
+      DATABASE_USERNAME: "postgres"
+      DATABASE_PASSWORD: "postgres"
+      JPA_SHOW_SQL: "true"
+      HIBERNATE_FORMAT_SQL: "true"
+    ports:
+      - "8080:8080"
+    networks:
+      - easybank-network
+
+networks:
+  easybank-network:
+
+volumes:
+  postgres_data:

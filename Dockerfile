@@ -17,5 +17,7 @@ RUN ./mvnw package -DskipTests
 # Expose the application port
 EXPOSE 8080
 
+ENV SWAGGER_PORT=8080
+
 # Run the application
 CMD ["java", "-jar", "target/easybank-0.0.1-SNAPSHOT.jar"]
