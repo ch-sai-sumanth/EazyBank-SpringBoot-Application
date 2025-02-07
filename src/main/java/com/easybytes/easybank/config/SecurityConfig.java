@@ -26,11 +26,17 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @Profile("!prod")
 public class SecurityConfig {
+
+    private static final String[] AUTH_WHITELIST = {
+            "/api/v1/auth/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs.yaml"
+    };
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -52,30 +58,32 @@ public class SecurityConfig {
                         return config;
                     }
                 }))
-                .csrf(csrfConfig->csrfConfig
+                .csrf(csrfConfig -> csrfConfig
                         .csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers("/contact","/register","/apiLogin","/load")
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                        .ignoringRequestMatchers("/contact", "/register", "/apiLogin", "/load")
+                        .ignoringRequestMatchers(AUTH_WHITELIST)
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                )
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-                .requiresChannel(rcc->rcc.anyRequest().requiresInsecure())  //allows http requests
                 .authorizeHttpRequests((requests) -> requests
-//                        .requestMatchers("/myBalance").hasAuthority("VIEWBALANCE")
-                        .requestMatchers("/myBalance").hasAnyRole("USER","ADMIN")
-                        .requestMatchers("/myAccount").hasAnyRole("USER","ADMIN")
-                        .requestMatchers("/myCards").hasAnyRole("USER","ADMIN")
+                        .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myAccount").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myCards").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/myLoans").hasRole("ADMIN")
                         .requestMatchers("/user").authenticated()
-                .requestMatchers("/notices","/contact","/register","/invalidSession","/apiLogin","/load").permitAll());
-        http.formLogin(withDefaults());
-        http.httpBasic(hbc->hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
-        http.exceptionHandling(ehc->ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
+                        .requestMatchers("/notices", "/contact", "/register", "/invalidSession", "/apiLogin", "/load","/error").permitAll()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .anyRequest().authenticated()
+                );
+
+        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -90,10 +98,9 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
                                                        PasswordEncoder passwordEncoder) {
-
         EazyBankUsernamePasswordAuthenticationProvider authenticationProvider =
                 new EazyBankUsernamePasswordAuthenticationProvider(userDetailsService, passwordEncoder);
-        ProviderManager providerManager=new ProviderManager(authenticationProvider);
+        ProviderManager providerManager = new ProviderManager(authenticationProvider);
         providerManager.setEraseCredentialsAfterAuthentication(false);
         return providerManager;
     }
